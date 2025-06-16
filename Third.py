@@ -1,9 +1,10 @@
 from selenium import webdriver
-from selenium.common import TimeoutException
+from selenium.common import TimeoutException, UnexpectedAlertPresentException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+
 
 def test_zero_transfer_amount():
     # Инициализация драйвера
@@ -69,6 +70,7 @@ def test_zero_transfer_amount():
 
     # Закрытие драйвера
     driver.quit()
+
 
 def test_small_transfer_commission():
     # Инициализация драйвера
@@ -152,6 +154,7 @@ def test_small_transfer_commission():
 
     # Закрытие драйвера
     driver.quit()
+
 
 def test_transfer_amount_exceeds_balance():
     # Инициализация драйвера
@@ -256,7 +259,8 @@ def test_multiple_transfers_same_amount():
         # Ожидаем появления кнопки "Перевести" и нажимаем на нее
         transfer_button = WebDriverWait(driver, 10).until(
             EC.element_to_be_clickable(
-                (By.XPATH, "//button[@class='g-button g-button_view_outlined g-button_size_l g-button_pin_round-round']"))
+                (By.XPATH,
+                 "//button[@class='g-button g-button_view_outlined g-button_size_l g-button_pin_round-round']"))
         )
         transfer_button.click()
 
@@ -275,6 +279,7 @@ def test_multiple_transfers_same_amount():
 
     # Закрытие драйвера
     driver.quit()
+
 
 def test_repeat_card_number_entry():
     # Инициализация драйвера
@@ -374,4 +379,3 @@ def test_repeat_card_number_entry():
 
     # Закрытие драйвера
     driver.quit()
-

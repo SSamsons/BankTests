@@ -92,14 +92,6 @@ def test_card_number_length_exceeding_max():
     # Закрытие драйвера
     driver.quit()
 
-
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
-
-
 def test_successful_transfer_with_valid_data():
     # Инициализация драйвера
     driver = webdriver.Chrome()
