@@ -15,6 +15,11 @@ jobs:
         image: selenium/standalone-chrome
         ports:
           - 4444:4444
+        options: >-
+          --health-cmd "curl -f http://localhost:4444/wd/hub/status"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -29,8 +34,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Wait for Selenium
+      run: |
+        timeout 60 bash -c 'until curl -s http://localhost:4444/wd/hub/status | grep -q "ready.*true"; do sleep 2; done'
+
     - name: Run Selenium tests
       env:
         SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
       run: |
-        pytest --maxfail=1 --disable-warnings -v 
+        pytest --maxfail=1 --disable-warnings -v --tb=short 

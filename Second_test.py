@@ -156,30 +156,49 @@ def test_extremely_large_negative_transfer():
     driver.quit()
 
 def test_invalid_characters_in_card_number():
+    import os
     selenium_url = os.getenv("SELENIUM_REMOTE_URL", None)
     if selenium_url:
-        from selenium.webdriver import Remote
-        options = webdriver.ChromeOptions()
-        driver = Remote(command_executor=selenium_url, options=options)
+        try:
+            from selenium.webdriver import Remote
+            options = webdriver.ChromeOptions()
+            options.add_argument('--no-sandbox')
+            options.add_argument('--headless')
+            options.add_argument('--disable-dev-shm-usage')
+            driver = Remote(command_executor=selenium_url, options=options)
+        except Exception as e:
+            print(f"Failed to connect to remote Selenium: {e}")
+            from webdriver_manager.chrome import ChromeDriverManager
+            from selenium.webdriver.chrome.service import Service
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service)
     else:
-        driver = webdriver.Chrome()
+        try:
+            from webdriver_manager.chrome import ChromeDriverManager
+            from selenium.webdriver.chrome.service import Service
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service)
+        except:
+            driver = webdriver.Chrome()
 
-    driver.get("http://localhost:8000/?balance=50000&reserved=2000")
+    try:
+        driver.get("http://localhost:8000/?balance=50000&reserved=2000")
 
-    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
-    rub_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]"))
-    )
-    rub_button.click()
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
+        rub_button = WebDriverWait(driver, 10).until(
+            EC.element_to_be_clickable((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]"))
+        )
+        rub_button.click()
 
-    card_input = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.XPATH, "//input[@placeholder='0000 0000 0000 0000']"))
-    )
-    card_input.send_keys("1234 ABCD 5678 9012")
-    current_value = card_input.get_attribute("value")
-    # Проверяем, что в поле только цифры и пробелы
-    assert all(c.isdigit() or c.isspace() for c in current_value), f"В поле есть недопустимые символы: {current_value}"
-    driver.quit()
+        card_input = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='0000 0000 0000 0000']"))
+        )
+        card_input.send_keys("1234 ABCD 5678 9012")
+        current_value = card_input.get_attribute("value")
+        # Проверяем, что в поле только цифры и пробелы
+        assert all(c.isdigit() or c.isspace() for c in current_value), f"В поле есть недопустимые символы: {current_value}"
+    finally:
+        driver.quit()
 
 
 def test_maximum_transfer_with_reserve():
