@@ -33,6 +33,14 @@ jobs:
       run: |
         timeout 30 bash -c 'until curl -s http://localhost:4444/wd/hub/status; do sleep 2; done'
 
+    - name: Debug environment
+      env:
+        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+      run: |
+        echo "Environment variable check:"
+        echo "SELENIUM_REMOTE_URL: $SELENIUM_REMOTE_URL"
+        python -c "import os; print('Python SELENIUM_REMOTE_URL:', os.getenv('SELENIUM_REMOTE_URL'))"
+
     - name: Run basic Selenium test
       env:
         SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
@@ -66,4 +74,6 @@ jobs:
       env:
         SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
       run: |
+        echo "Running tests with SELENIUM_REMOTE_URL: $SELENIUM_REMOTE_URL"
+        python -c "import os; print('Python env check:', os.getenv('SELENIUM_REMOTE_URL'))"
         pytest --maxfail=1 --disable-warnings -v --tb=short || echo "Tests failed - this is expected if app is not running" 

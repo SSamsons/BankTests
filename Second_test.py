@@ -9,15 +9,26 @@ import time
 
 def get_driver():
     """Получить драйвер для тестов - удалённый в CI, локальный локально"""
-    selenium_url = os.getenv("SELENIUM_REMOTE_URL", None)
+    selenium_url = os.getenv("SELENIUM_REMOTE_URL")
+    print(f"DEBUG: SELENIUM_REMOTE_URL = {selenium_url}")
+    
     if selenium_url:
+        print(f"DEBUG: Using remote WebDriver at {selenium_url}")
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
         options.add_argument('--headless')
         options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--remote-debugging-port=9222')
         return Remote(command_executor=selenium_url, options=options)
     else:
-        return webdriver.Chrome()
+        print("DEBUG: Using local Chrome WebDriver")
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        return webdriver.Chrome(options=options)
 
 def test_card_number_auto_formatting():
     driver = get_driver()

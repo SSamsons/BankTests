@@ -4,28 +4,37 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver import Remote
+
+def get_driver():
+    """Получить драйвер для тестов - удалённый в CI, локальный локально"""
+    selenium_url = os.getenv("SELENIUM_REMOTE_URL")
+    print(f"DEBUG: SELENIUM_REMOTE_URL = {selenium_url}")
+    
+    if selenium_url:
+        print(f"DEBUG: Using remote WebDriver at {selenium_url}")
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        return Remote(command_executor=selenium_url, options=options)
+    else:
+        print("DEBUG: Using local Chrome WebDriver")
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
+        options.add_argument('--headless')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--disable-gpu')
+        return webdriver.Chrome(options=options)
 
 def test_selenium_connection():
     """Простой тест для проверки подключения к Selenium"""
     print("Starting Selenium connection test...")
     
-    selenium_url = os.getenv("SELENIUM_REMOTE_URL", None)
-    print(f"SELENIUM_REMOTE_URL: {selenium_url}")
-    
     try:
-        if selenium_url:
-            print("Attempting to connect to remote Selenium...")
-            from selenium.webdriver import Remote
-            options = webdriver.ChromeOptions()
-            options.add_argument('--no-sandbox')
-            options.add_argument('--headless')
-            options.add_argument('--disable-dev-shm-usage')
-            driver = Remote(command_executor=selenium_url, options=options)
-            print("Successfully connected to remote Selenium")
-        else:
-            print("Using local Chrome driver...")
-            driver = webdriver.Chrome()
-            print("Successfully started local Chrome driver")
+        driver = get_driver()
+        print("Driver created successfully")
         
         # Простая проверка - открываем Google
         print("Opening test page...")
@@ -52,18 +61,8 @@ def test_localhost_connection():
     """Тест подключения к localhost:8000"""
     print("Starting localhost connection test...")
     
-    selenium_url = os.getenv("SELENIUM_REMOTE_URL", None)
-    
     try:
-        if selenium_url:
-            from selenium.webdriver import Remote
-            options = webdriver.ChromeOptions()
-            options.add_argument('--no-sandbox')
-            options.add_argument('--headless')
-            options.add_argument('--disable-dev-shm-usage')
-            driver = Remote(command_executor=selenium_url, options=options)
-        else:
-            driver = webdriver.Chrome()
+        driver = get_driver()
         
         print("Attempting to connect to localhost:8000...")
         driver.get("http://localhost:8000")
