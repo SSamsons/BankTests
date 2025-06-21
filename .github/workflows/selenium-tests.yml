@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
 
     services:
       selenium:
@@ -34,16 +36,12 @@ jobs:
         timeout 30 bash -c 'until curl -s http://localhost:4444/wd/hub/status; do sleep 2; done'
 
     - name: Debug environment
-      env:
-        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
       run: |
         echo "Environment variable check:"
         echo "SELENIUM_REMOTE_URL: $SELENIUM_REMOTE_URL"
         python -c "import os; print('Python SELENIUM_REMOTE_URL:', os.getenv('SELENIUM_REMOTE_URL'))"
 
     - name: Run basic Selenium test
-      env:
-        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
       run: |
         python -c "
         import os
@@ -71,8 +69,6 @@ jobs:
         "
 
     - name: Run Selenium tests (if app available)
-      env:
-        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
       run: |
         echo "Running tests with SELENIUM_REMOTE_URL: $SELENIUM_REMOTE_URL"
         python -c "import os; print('Python env check:', os.getenv('SELENIUM_REMOTE_URL'))"

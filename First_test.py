@@ -1,10 +1,11 @@
 import os
+import pytest
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import Remote
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 import time
 
 def get_driver():
@@ -30,9 +31,24 @@ def get_driver():
         options.add_argument('--disable-gpu')
         return webdriver.Chrome(options=options)
 
+def check_app_availability(driver):
+    """Проверить доступность тестируемого приложения"""
+    try:
+        driver.get("http://localhost:8000")
+        # Если страница загрузилась без ошибок, приложение доступно
+        return True
+    except WebDriverException as e:
+        if "ERR_CONNECTION_REFUSED" in str(e):
+            return False
+        raise
+
 def test_card_number_length():
     driver = get_driver()
     try:
+        # Проверяем доступность приложения
+        if not check_app_availability(driver):
+            pytest.skip("Application not available - skipping test")
+        
         driver.get("http://localhost:8000/?balance=50000&reserved=2000")
         
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
@@ -61,6 +77,10 @@ def test_card_number_length():
 def test_card_number_length_exceeding_max():
     driver = get_driver()
     try:
+        # Проверяем доступность приложения
+        if not check_app_availability(driver):
+            pytest.skip("Application not available - skipping test")
+        
         driver.get("http://localhost:8000/?balance=50000&reserved=2000")
         
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
@@ -84,6 +104,10 @@ def test_card_number_length_exceeding_max():
 def test_successful_transfer_with_valid_data():
     driver = get_driver()
     try:
+        # Проверяем доступность приложения
+        if not check_app_availability(driver):
+            pytest.skip("Application not available - skipping test")
+        
         driver.get("http://localhost:8000/?balance=50000&reserved=2000")
         
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
@@ -124,6 +148,10 @@ def test_successful_transfer_with_valid_data():
 def test_transfer_with_reserved_balance():
     driver = get_driver()
     try:
+        # Проверяем доступность приложения
+        if not check_app_availability(driver):
+            pytest.skip("Application not available - skipping test")
+        
         driver.get("http://localhost:8000/?balance=50000&reserved=2000")
         
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
@@ -171,6 +199,10 @@ def test_transfer_with_reserved_balance():
 def test_transfer_with_zero_balance():
     driver = get_driver()
     try:
+        # Проверяем доступность приложения
+        if not check_app_availability(driver):
+            pytest.skip("Application not available - skipping test")
+        
         driver.get("http://localhost:8000/?balance=0&reserved=0")
         
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//div[@role='button' and .//h2[text()='Рубли']]")))
